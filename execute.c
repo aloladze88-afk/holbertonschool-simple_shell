@@ -38,7 +38,7 @@ int execute_command(char *line, char *prog_name, int count)
 		}
 		fprintf(stderr, "%s: %d: %s: %s\n", prog_name, count, line, msg);
 		free(line);
-		exit(exit_code);
+		_exit(exit_code);
 	}
 	wait(&status);
 	return (WEXITSTATUS(status));
