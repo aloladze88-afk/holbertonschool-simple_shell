@@ -9,6 +9,6 @@
 
 extern char **environ;
 
-void execute_command(char *line, char *prog_name);
+void execute_command(char *line, char *prog_name, int count);
 
 #endif /* MAIN_H */
