@@ -7,14 +7,17 @@ hsh \- simple UNIX command interpreter
 .B hsh
 is a simple command line interpreter.
 
-It displays a prompt in interactive mode, reads one command per line,
-creates a child process with
+It displays a prompt in interactive mode, reads one command line,
+splits it into arguments on spaces and tabs, creates a child process
+with
 .BR fork (2),
 executes the command with
 .BR execve (2),
 and waits for the command to finish.
 
-This version supports only one-word commands given as absolute paths.
+This version supports commands given as absolute paths or found through
+.BR PATH ,
+with arguments separated by spaces and tabs.
 
 It also works in non-interactive mode, for example when input is piped
 from another command or from a file.
@@ -30,9 +33,21 @@ Command execution
 Executes one command at a time using
 .BR execve (2).
 .TP
+Arguments
+Splits the input line on spaces and tabs and passes the resulting
+arguments to
+.BR execve (2).
+.TP
+PATH lookup
+Searches executable files in
+.B PATH
+before calling
+.BR fork (2),
+so no child is created when a command does not exist.
+.TP
 Process handling
 Creates a child process and waits for it with
-.BR wait (2).
+.BR waitpid (2).
 .TP
 End of file
 Exits cleanly on
@@ -41,12 +56,6 @@ in interactive mode.
 
 .SH LIMITATIONS
 This version does not:
-.TP
-Use PATH
-Commands must be written as absolute paths.
-.TP
-Handle arguments
-Only one-word commands are supported.
 .TP
 Implement built-ins
 Commands such as
@@ -59,23 +68,23 @@ Handle advanced shell syntax
 No pipes, redirections, semicolons, quotes, or wildcards.
 
 .SH RETURN VALUE
-Returns 0 on normal exit.
+Returns the exit status of the last executed command.
 
 .SH EXAMPLES
 Interactive mode:
 .PP
 .nf
 $ ./hsh
-($) /bin/ls
-main.c execute.c main.h README.md
+($) echo hello shell
+hello shell
 ($)
 .fi
 
 Non-interactive mode:
 .PP
 .nf
-$ echo "/bin/ls" | ./hsh
-main.c execute.c main.h README.md
+$ echo "ls -l" | ./hsh
+total 32
 .fi
 
 .SH AUTHORS
