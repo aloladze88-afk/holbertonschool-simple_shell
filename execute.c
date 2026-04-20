@@ -7,7 +7,7 @@
  * @count: current input line number, used in error messages
  *
  * Return: exit status of the child (126 on EACCES, 127 on ENOENT),
- * or 1 on fork failure
+ * or 1 on fork/wait failure
  */
 int execute_command(char *line, char *prog_name, int count)
 {
@@ -36,10 +36,14 @@ int execute_command(char *line, char *prog_name, int count)
 			msg = "not found";
 			exit_code = 127;
 		}
-		fprintf(stderr, "%s: %d: %s: %s\n", prog_name, count, line, msg);
+		fprintf(stderr, "%s: %d: %s: %s\n",
+			prog_name, count, line, msg);
 		free(line);
-		exit(exit_code);
+		_exit(exit_code);
 	}
-	wait(&status);
-	return (WEXITSTATUS(status));
+	if (waitpid(pid, &status, 0) == -1)
+		return (1);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	return (1);
 }
