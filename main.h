@@ -12,4 +12,4 @@ extern char **environ;
 
 int execute_command(char *line, char *prog_name, int count);
 
-#endif /* MAIN_H */
+#endif

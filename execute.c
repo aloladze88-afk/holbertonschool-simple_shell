@@ -17,15 +17,18 @@ int execute_command(char *line, char *prog_name, int count)
 
 	argv[0] = line;
 	argv[1] = NULL;
+
 	pid = fork();
 	if (pid == -1)
 	{
 		perror(prog_name);
 		return (1);
 	}
+
 	if (pid == 0)
 	{
 		execve(line, argv, environ);
+
 		if (errno == EACCES)
 		{
 			msg = "Permission denied";
@@ -36,14 +39,17 @@ int execute_command(char *line, char *prog_name, int count)
 			msg = "not found";
 			exit_code = 127;
 		}
+
 		fprintf(stderr, "%s: %d: %s: %s\n",
 			prog_name, count, line, msg);
-		free(line);
 		_exit(exit_code);
 	}
+
 	if (waitpid(pid, &status, 0) == -1)
 		return (1);
+
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
+
 	return (1);
 }
