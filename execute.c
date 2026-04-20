@@ -2,33 +2,41 @@
 
 /**
  * execute_command - runs one command in a child process
- * @line: command to run, given as an absolute path
- * @prog_name: shell name for error messages
+ * @line: absolute path of the command
+ * Forks a child and runs the command with execve().
+ * The parent waits for the child to finish.
+ * If execve() fails, the child prints an error and exits with status 127.
  */
 
-void execute_command(char *line, char *prog_name)
+void execute_command(char *line)
 {
-	pid_t pid;
-	int status;
-	char *argv[2];
+    pid_t pid;
+    char *argv[2];
 
-	argv[0] = line;
-	argv[1] = NULL;
+    if (line[0] == '\0')
+        return;
 
-	pid = fork();
-	if (pid == -1)
-	{
-		perror(prog_name);
-		return;
-	}
+    argv[0] = line;
+    argv[1] = NULL;
 
-	if (pid == 0)
-	{
-		execve(line, argv, environ);
-		perror(prog_name);
-		free(line);
-		exit(127);
-	}
+    pid = fork();
 
-	wait(&status);
+    if (pid == -1)
+    {
+        perror("fork");
+        return;
+    }
+
+    if (pid == 0)
+    {
+        if (execve(line, argv, environ) == -1)
+        {
+            perror("./shell");
+            exit(1);
+        }
+    }
+    else
+    {
+        wait(NULL);
+    }
 }
