@@ -56,7 +56,7 @@ total 32
 ($) /bin/echo hello shell
 hello shell
 ($) ls
-./hsh: 3: ls: not found
+AUTHORS  README.md  execute.c  hsh  main.c  main.h  man_1_simple_shell  path.c
 ($)
 $
 ```
@@ -68,6 +68,7 @@ to `execve`.
 - `main.h`: shared prototypes and includes
 - `main.c`: shell loop and EOF handling
 - `execute.c`: argument splitting, `fork`, `execve`, and `waitpid`
+- `path.c`: `PATH` lookup and command resolution helpers
 - `README.md`: project description
 
 ## Authors

@@ -15,7 +15,9 @@ executes the command with
 .BR execve (2),
 and waits for the command to finish.
 
-This version supports commands given as absolute paths with arguments.
+This version supports commands given as absolute paths or found through
+.BR PATH ,
+with arguments separated by spaces and tabs.
 
 It also works in non-interactive mode, for example when input is piped
 from another command or from a file.
@@ -36,6 +38,13 @@ Splits the input line on spaces and tabs and passes the resulting
 arguments to
 .BR execve (2).
 .TP
+PATH lookup
+Searches executable files in
+.B PATH
+before calling
+.BR fork (2),
+so no child is created when a command does not exist.
+.TP
 Process handling
 Creates a child process and waits for it with
 .BR waitpid (2).
@@ -47,9 +56,6 @@ in interactive mode.
 
 .SH LIMITATIONS
 This version does not:
-.TP
-Use PATH
-Commands must be written as absolute paths.
 .TP
 Implement built-ins
 Commands such as
@@ -69,7 +75,7 @@ Interactive mode:
 .PP
 .nf
 $ ./hsh
-($) /bin/echo hello shell
+($) echo hello shell
 hello shell
 ($)
 .fi
@@ -77,7 +83,7 @@ hello shell
 Non-interactive mode:
 .PP
 .nf
-$ echo "/bin/ls -l" | ./hsh
+$ echo "ls -l" | ./hsh
 total 32
 .fi
 

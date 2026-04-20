@@ -1,127 +1,6 @@
 #include "main.h"
 
 /**
- * print_exec_error - print shell-style execution error
- * @prog_name: shell argv[0]
- * @count: input line count
- * @command: command name as typed
- * @msg: error message
- */
-static void print_exec_error(char *prog_name, int count, char *command, char *msg)
-{
-	fprintf(stderr, "%s: %d: %s: %s\n", prog_name, count, command, msg);
-}
-
-/**
- * join_path - build full path from directory and command
- * @dir: directory path
- * @command: command name
- *
- * Return: newly allocated full path or NULL on failure
- */
-static char *join_path(const char *dir, const char *command)
-{
-	char *full;
-	size_t len_dir, len_cmd;
-
-	len_dir = strlen(dir);
-	len_cmd = strlen(command);
-	full = malloc(len_dir + len_cmd + 2);
-	if (full == NULL)
-		return (NULL);
-	strcpy(full, dir);
-	if (len_dir > 0 && dir[len_dir - 1] != '/')
-		strcat(full, "/");
-	strcat(full, command);
-	return (full);
-}
-
-/**
- * resolve_command - resolve command using absolute path or PATH lookup
- * @command: command token from argv[0]
- * @status: output status code for failure cases
- * @msg: output message for failure cases
- *
- * Return: allocated executable path on success, NULL on failure
- */
-static char *resolve_command(char *command, int *status, char **msg)
-{
-	char *path_env, *path_copy, *dir, *full;
-	int saw_permission_denied;
-
-	if (strchr(command, '/') != NULL)
-	{
-		if (access(command, F_OK) != 0)
-		{
-			*status = 127;
-			*msg = "not found";
-			return (NULL);
-		}
-		if (access(command, X_OK) != 0)
-		{
-			*status = 126;
-			*msg = "Permission denied";
-			return (NULL);
-		}
-		full = malloc(strlen(command) + 1);
-		if (full == NULL)
-			return (NULL);
-		strcpy(full, command);
-		return (full);
-	}
-
-	path_env = getenv("PATH");
-	if (path_env == NULL || *path_env == '\0')
-	{
-		*status = 127;
-		*msg = "not found";
-		return (NULL);
-	}
-
-	path_copy = malloc(strlen(path_env) + 1);
-	if (path_copy == NULL)
-		return (NULL);
-	strcpy(path_copy, path_env);
-	saw_permission_denied = 0;
-
-	dir = strtok(path_copy, ":");
-	while (dir != NULL)
-	{
-		full = join_path(dir, command);
-		if (full == NULL)
-		{
-			free(path_copy);
-			return (NULL);
-		}
-		if (access(full, F_OK) == 0)
-		{
-			if (access(full, X_OK) == 0)
-			{
-				free(path_copy);
-				return (full);
-			}
-			free(full);
-			saw_permission_denied = 1;
-			dir = strtok(NULL, ":");
-			continue;
-		}
-		free(full);
-		dir = strtok(NULL, ":");
-	}
-
-	free(path_copy);
-	if (saw_permission_denied)
-	{
-		*status = 126;
-		*msg = "Permission denied";
-		return (NULL);
-	}
-	*status = 127;
-	*msg = "not found";
-	return (NULL);
-}
-
-/**
  * split_line - split an input line into arguments
  * @line: command line buffer to tokenize
  *
@@ -158,6 +37,38 @@ static char **split_line(char *line)
 	}
 	argv[count] = NULL;
 	return (argv);
+}
+
+/**
+ * child_exec_failed - handle execve failure in child process
+ * @resolved: resolved executable path
+ * @argv: tokenized arguments
+ * @line: original input line
+ * @prog_name: shell argv[0]
+ * @count: input line number
+ * @command: command as typed
+ */
+static void child_exec_failed(char *resolved, char **argv, char *line,
+	char *prog_name, int count, char *command)
+{
+	int exit_code;
+	char *msg;
+
+	if (errno == EACCES)
+	{
+		msg = "Permission denied";
+		exit_code = 126;
+	}
+	else
+	{
+		msg = "not found";
+		exit_code = 127;
+	}
+	print_exec_error(prog_name, count, command, msg);
+	free(resolved);
+	free(argv);
+	free(line);
+	exit(exit_code);
 }
 
 /**
@@ -208,21 +119,7 @@ int execute_command(char *line, char *prog_name, int count)
 	if (pid == 0)
 	{
 		execve(resolved, argv, environ);
-		if (errno == EACCES)
-		{
-			msg = "Permission denied";
-			exit_code = 126;
-		}
-		else
-		{
-			msg = "not found";
-			exit_code = 127;
-		}
-		fprintf(stderr, "%s: %d: %s: %s\n", prog_name, count, command, msg);
-		free(resolved);
-		free(argv);
-		free(line);
-		exit(exit_code);
+		child_exec_failed(resolved, argv, line, prog_name, count, command);
 	}
 	waitpid(pid, &status, 0);
 	free(resolved);
