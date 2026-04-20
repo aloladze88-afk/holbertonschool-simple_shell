@@ -23,7 +23,6 @@ static int is_blank(const char *s)
 int main(int ac, char **av)
 {
 	char *line;
-	char *cmd;
 	size_t len;
 	ssize_t nread;
 	int interactive, count, last_status;
@@ -34,12 +33,10 @@ int main(int ac, char **av)
 	count = 0;
 	last_status = 0;
 	interactive = isatty(STDIN_FILENO);
-
 	while (1)
 	{
 		if (interactive)
 			write(STDOUT_FILENO, "($) ", 4);
-
 		nread = getline(&line, &len, stdin);
 		if (nread == -1)
 		{
@@ -48,21 +45,12 @@ int main(int ac, char **av)
 				write(STDOUT_FILENO, "\n", 1);
 			return (last_status);
 		}
-
 		count++;
-
 		if (nread > 0 && line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
-
 		if (is_blank(line))
 			continue;
-
-		cmd = line;
-		while (*cmd == ' ' || *cmd == '\t')
-			cmd++;
-
-		last_status = execute_command(cmd, av[0], count);
+		last_status = execute_command(line, av[0], count);
 	}
-
 	return (last_status);
 }

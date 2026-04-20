@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -12,4 +13,4 @@ extern char **environ;
 
 int execute_command(char *line, char *prog_name, int count);
 
-#endif
+#endif /* MAIN_H */
