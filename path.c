@@ -113,6 +113,23 @@ static char *search_path_dirs(char *path_copy, char *command, int *status,
 }
 
 /**
+ * get_path_env - retrieve the value of PATH from environ
+ *
+ * Return: pointer to the value part of the PATH entry, or NULL
+ */
+static char *get_path_env(void)
+{
+	int i;
+
+	for (i = 0; environ[i] != NULL; i++)
+	{
+		if (strncmp(environ[i], "PATH=", 5) == 0)
+			return (environ[i] + 5);
+	}
+	return (NULL);
+}
+
+/**
  * resolve_command - resolve command using absolute path or PATH lookup
  * @command: command token from argv[0]
  * @status: output status code for failure cases
@@ -126,7 +143,7 @@ char *resolve_command(char *command, int *status, char **msg)
 
 	if (strchr(command, '/') != NULL)
 		return (check_direct_command(command, status, msg));
-	path_env = getenv("PATH");
+	path_env = get_path_env();
 	if (path_env == NULL)
 	{
 		*status = 127;
