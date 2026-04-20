@@ -45,10 +45,12 @@ before calling
 .BR fork (2),
 so no child is created when a command does not exist.
 .TP
-Built-in command
+Built-in commands
 Implements
 .B exit
-to leave the shell.
+to leave the shell and
+.B env
+to print the current environment.
 .TP
 Process handling
 Creates a child process and waits for it with
@@ -62,11 +64,6 @@ in interactive mode.
 .SH LIMITATIONS
 This version does not:
 .TP
-Implement other built-ins
-Commands such as
-.B env
-are not built in.
-.TP
 Handle advanced shell syntax
 No pipes, redirections, semicolons, quotes, or wildcards.
 .TP
@@ -74,6 +71,13 @@ Handle arguments for exit
 Only
 .B exit
 without arguments is required in this version.
+.TP
+Modify the environment
+Built-ins such as
+.B setenv
+and
+.B unsetenv
+are not implemented.
 
 .SH RETURN VALUE
 Returns the exit status of the last executed command.
@@ -83,8 +87,10 @@ Interactive mode:
 .PP
 .nf
 $ ./hsh
-($) /bin/echo hello shell
-hello shell
+($) env
+USER=julien
+HOME=/home/julien
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ($) exit
 $
 .fi
@@ -92,8 +98,10 @@ $
 Non-interactive mode:
 .PP
 .nf
-$ echo "/bin/ls" | ./hsh
-hsh main.c shell.c test_ls_2
+$ echo "env" | ./hsh
+USER=julien
+HOME=/home/julien
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 .fi
 
 .SH AUTHORS

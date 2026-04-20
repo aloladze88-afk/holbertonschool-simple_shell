@@ -14,24 +14,6 @@ static int is_blank(const char *s)
 }
 
 /**
- * is_exit_builtin - check whether the input is the exit built-in
- * @line: input line to inspect
- *
- * Return: 1 if the command is exit, 0 otherwise
- */
-static int is_exit_builtin(const char *line)
-{
-	while (*line == ' ' || *line == '\t')
-		line++;
-	if (strncmp(line, "exit", 4) != 0)
-		return (0);
-	line += 4;
-	while (*line == ' ' || *line == '\t')
-		line++;
-	return (*line == '\0');
-}
-
-/**
  * main - entry point of the simple shell
  * @ac: argument count (unused)
  * @av: argument vector; av[0] is the error prefix
@@ -43,7 +25,7 @@ int main(int ac, char **av)
 	char *line;
 	size_t len;
 	ssize_t nread;
-	int interactive, count, last_status;
+	int interactive, count, last_status, handled, should_exit;
 
 	(void)ac;
 	line = NULL;
@@ -68,10 +50,15 @@ int main(int ac, char **av)
 			line[nread - 1] = '\0';
 		if (is_blank(line))
 			continue;
-		if (is_exit_builtin(line))
+		last_status = handle_builtin(line, last_status, &handled, &should_exit);
+		if (handled)
 		{
-			free(line);
-			return (last_status);
+			if (should_exit)
+			{
+				free(line);
+				return (last_status);
+			}
+			continue;
 		}
 		last_status = execute_command(line, av[0], count);
 	}
