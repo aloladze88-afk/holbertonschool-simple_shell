@@ -1,4 +1,4 @@
-# Simple Shell (0.2)
+# Simple Shell (0.2+)
 
 ## Description
 `hsh` is a minimal UNIX command interpreter written in C.
@@ -9,17 +9,18 @@ This version:
 - executes the command with `execve`
 - waits for the child to finish
 - supports arguments separated by spaces or tabs
+- resolves commands using `PATH`
 
 ## Supported in this version
 - interactive mode with the `($) ` prompt
 - non-interactive mode from a pipe or file
 - absolute-path commands such as `/bin/ls`
+- commands found through `PATH` such as `ls`
 - arguments such as `/bin/ls -l /tmp`
 - clean exit on `Ctrl+D`
 - error reporting when a command cannot be executed
 
 ## Not supported in this version
-- `PATH` lookup
 - built-ins such as `exit` or `env`
 - quotes, pipes, redirections, semicolons, or advanced parsing
 
@@ -60,8 +61,8 @@ hello shell
 $
 ```
 
-`ls` fails because this version does not search `PATH`. The shell passes
-arguments to `execve`, but it only splits on spaces and tabs.
+The shell resolves commands through `PATH` and passes tokenized arguments
+to `execve`.
 
 ## Files
 - `main.h`: shared prototypes and includes
