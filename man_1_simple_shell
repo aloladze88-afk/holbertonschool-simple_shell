@@ -45,6 +45,11 @@ before calling
 .BR fork (2),
 so no child is created when a command does not exist.
 .TP
+Built-in command
+Implements
+.B exit
+to leave the shell.
+.TP
 Process handling
 Creates a child process and waits for it with
 .BR waitpid (2).
@@ -57,15 +62,18 @@ in interactive mode.
 .SH LIMITATIONS
 This version does not:
 .TP
-Implement built-ins
+Implement other built-ins
 Commands such as
-.B exit
-and
 .B env
 are not built in.
 .TP
 Handle advanced shell syntax
 No pipes, redirections, semicolons, quotes, or wildcards.
+.TP
+Handle arguments for exit
+Only
+.B exit
+without arguments is required in this version.
 
 .SH RETURN VALUE
 Returns the exit status of the last executed command.
@@ -75,16 +83,17 @@ Interactive mode:
 .PP
 .nf
 $ ./hsh
-($) echo hello shell
+($) /bin/echo hello shell
 hello shell
-($)
+($) exit
+$
 .fi
 
 Non-interactive mode:
 .PP
 .nf
-$ echo "ls -l" | ./hsh
-total 32
+$ echo "/bin/ls" | ./hsh
+hsh main.c shell.c test_ls_2
 .fi
 
 .SH AUTHORS
