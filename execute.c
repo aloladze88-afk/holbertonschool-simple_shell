@@ -1,28 +1,19 @@
 #include "main.h"
 
 /**
- * execute_command - run a single command in a child process
- * @line: the command to run, given as an absolute path
- * @prog_name: the shell's own argv[0], used as the error prefix
- * @count: the number of the current input line, used in error messages
+ * execute_command - fork, execve, and wait for a command
+ * @line: absolute path of the command to run
+ * @prog_name: shell's argv[0], used as the error prefix
+ * @count: current input line number, used in error messages
  *
- * Description: Forks a child which calls execve with @line as both
- * the program path and argv[0] of the invoked process, and passes
- * the current environ. The parent waits for the child to finish.
- * On execve failure, an error is printed to stderr in the format
- * "prog_name: count: line: not found" and the child frees the line
- * buffer before exiting with status 127, which mirrors standard
- * shell behaviour. The child's exit status is propagated back to
- * the caller via WEXITSTATUS so that the shell as a whole can
- * return the status of the last command on EOF.
- *
- * Return: the exit status of the child, or 1 on fork failure
+ * Return: exit status of the child (126 on EACCES, 127 on ENOENT),
+ * or 1 on fork failure
  */
 int execute_command(char *line, char *prog_name, int count)
 {
 	pid_t pid;
-	int status;
-	char *argv[2];
+	int status, exit_code;
+	char *argv[2], *msg;
 
 	argv[0] = line;
 	argv[1] = NULL;
@@ -35,9 +26,19 @@ int execute_command(char *line, char *prog_name, int count)
 	if (pid == 0)
 	{
 		execve(line, argv, environ);
-		fprintf(stderr, "%s: %d: %s: not found\n", prog_name, count, line);
+		if (errno == EACCES)
+		{
+			msg = "Permission denied";
+			exit_code = 126;
+		}
+		else
+		{
+			msg = "not found";
+			exit_code = 127;
+		}
+		fprintf(stderr, "%s: %d: %s: %s\n", prog_name, count, line, msg);
 		free(line);
-		exit(127);
+		exit(exit_code);
 	}
 	wait(&status);
 	return (WEXITSTATUS(status));

@@ -1,10 +1,10 @@
 #include "main.h"
 
 /**
- * is_blank - check whether a string is empty or whitespace only
- * @s: the string to inspect
+ * is_blank - test whether a string is empty or whitespace only
+ * @s: string to inspect
  *
- * Return: 1 if @s contains only spaces and tabs (or nothing), 0 otherwise
+ * Return: 1 if @s has only spaces or tabs, 0 otherwise
  */
 static int is_blank(const char *s)
 {
@@ -14,19 +14,11 @@ static int is_blank(const char *s)
 }
 
 /**
- * main - entry point of the simple shell 0.1
+ * main - entry point of the simple shell
  * @ac: argument count (unused)
- * @av: argument vector; av[0] is used as the error prefix
+ * @av: argument vector; av[0] is the error prefix
  *
- * Description: Displays a prompt, reads one line from standard input,
- * strips the trailing newline, and passes the command to
- * execute_command. Blank and whitespace-only lines are ignored, but
- * are still counted for error-message line numbering, matching the
- * behaviour of /bin/sh. The shell exits cleanly when end-of-file is
- * reached (Ctrl+D in interactive mode), returning the exit status of
- * the last command executed.
- *
- * Return: the exit status of the last command executed, or 0 if none
+ * Return: exit status of the last command executed
  */
 int main(int ac, char **av)
 {
