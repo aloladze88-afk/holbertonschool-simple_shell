@@ -1,40 +1,46 @@
-#include "shell.h"
+#include "main.h"
 
 /**
- * main - entry point of the simple shell 0.1
- * @ac: argument count (unused)
- * @av: argument vector; av[0] is used as the error prefix
+ * main - entry point of the simple shell
+ * @ac: argument count
+ * @av: argument vector
  *
- * Return: Always 0
+ * Return: 0 on success
  */
-int main(int argc, char **argv)
+int main(int ac, char **av)
 {
-	char *line = NULL;
-	size_t len = 0;
+	char *line;
+	size_t len;
 	ssize_t nread;
-	int interactive = isatty(STDIN_FILENO);
+	int interactive;
 
 	(void)ac;
 	line = NULL;
 	len = 0;
 	interactive = isatty(STDIN_FILENO);
+
 	while (1)
 	{
 		if (interactive)
 			write(STDOUT_FILENO, "($) ", 4);
-		nread = getline(&line, &len, stdin);
 
+		nread = getline(&line, &len, stdin);
 		if (nread == -1)
 		{
+			free(line);
 			if (interactive)
-				printf("\n");
-			break;
+				write(STDOUT_FILENO, "\n", 1);
+			return (0);
 		}
+
 		if (nread > 0 && line[nread - 1] == '\n')
 			line[nread - 1] = '\0';
+
 		if (line[0] == '\0')
 			continue;
+
 		execute_command(line, av[0]);
 	}
+
 	return (0);
 }
