@@ -1,45 +1,24 @@
 #include "shell.h"
 
 /**
- * main - Simple shell 0.1 - no PATH, no built-ins, no arguments
- * @argc: Argument count
- * @argv: Argument vector
- *
+ * main - simple shell loop
  * Return: Always 0
  */
-int main(int argc, char **argv)
+int main(void)
 {
-	char *line = NULL;
-	size_t len = 0;
-	ssize_t nread;
-	int interactive = isatty(STDIN_FILENO);
+    char *line;
 
-	(void)argc;
+    while (1)
+    {
+        display_prompt();
 
-	while (1)
-	{
-		if (interactive)
-		{
-			printf("#cisfun$ ");
-			fflush(stdout);
-		}
+        line = read_line();
+        if (line == NULL)
+            break;
 
-		nread = getline(&line, &len, stdin);
+        execute_command(line);
+        free(line);
+    }
 
-		if (nread == -1)
-		{
-			if (interactive)
-				printf("\n");
-			break;
-		}
-
-		if (nread > 0 && line[nread - 1] == '\n')
-			line[nread - 1] = '\0';
-
-		if (line[0] != '\0')
-			execute_command(line, argv[0]);
-	}
-
-	free(line);
-	return (0);
+    return (0);
 }

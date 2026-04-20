@@ -3,13 +3,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/wait.h>
+#include <string.h>
 
 extern char **environ;
 
-void execute_command(char *command, char *shell_name);
+/* functions */
+void display_prompt(void);
+char *read_line(void);
+void execute_command(char *line);
 
 #endif
