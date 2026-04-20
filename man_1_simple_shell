@@ -1,0 +1,84 @@
+.TH HSH 1 "April 2026" "Holberton School" "User Commands"
+.SH NAME
+hsh \- simple UNIX command interpreter
+.SH SYNOPSIS
+.B hsh
+.SH DESCRIPTION
+.B hsh
+is a simple command line interpreter.
+
+It displays a prompt in interactive mode, reads one command per line,
+creates a child process with
+.BR fork (2),
+executes the command with
+.BR execve (2),
+and waits for the command to finish.
+
+This version supports only one-word commands given as absolute paths.
+
+It also works in non-interactive mode, for example when input is piped
+from another command or from a file.
+
+.SH FEATURES
+.TP
+Prompt
+Displays
+.B ($)
+when standard input is a terminal.
+.TP
+Command execution
+Executes one command at a time using
+.BR execve (2).
+.TP
+Process handling
+Creates a child process and waits for it with
+.BR wait (2).
+.TP
+End of file
+Exits cleanly on
+.B Ctrl+D
+in interactive mode.
+
+.SH LIMITATIONS
+This version does not:
+.TP
+Use PATH
+Commands must be written as absolute paths.
+.TP
+Handle arguments
+Only one-word commands are supported.
+.TP
+Implement built-ins
+Commands such as
+.B exit
+and
+.B env
+are not built in.
+.TP
+Handle advanced shell syntax
+No pipes, redirections, semicolons, quotes, or wildcards.
+
+.SH RETURN VALUE
+Returns 0 on normal exit.
+
+.SH EXAMPLES
+Interactive mode:
+.PP
+.nf
+$ ./hsh
+($) /bin/ls
+main.c execute.c main.h README.md
+($)
+.fi
+
+Non-interactive mode:
+.PP
+.nf
+$ echo "/bin/ls" | ./hsh
+main.c execute.c main.h README.md
+.fi
+
+.SH AUTHORS
+Aleksandre Loladze
+.br
+Nicolas Jacquemin
