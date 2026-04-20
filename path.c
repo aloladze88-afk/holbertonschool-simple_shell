@@ -81,6 +81,7 @@ static char *search_path_dirs(char *path_copy, char *command, int *status,
 {
 	char *dir, *next, *full;
 	char saved;
+	struct stat st;
 	int denied;
 
 	denied = 0;
@@ -96,10 +97,13 @@ static char *search_path_dirs(char *path_copy, char *command, int *status,
 		*next = saved;
 		if (full == NULL)
 			return (NULL);
-		if (access(full, F_OK) == 0 && access(full, X_OK) == 0)
-			return (full);
 		if (access(full, F_OK) == 0)
+		{
+			if (stat(full, &st) == 0 && !S_ISDIR(st.st_mode) &&
+				access(full, X_OK) == 0)
+				return (full);
 			denied = 1;
+		}
 		free(full);
 		dir = (saved == '\0') ? NULL : next + 1;
 	}
