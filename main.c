@@ -1,16 +1,11 @@
 #include "main.h"
 
 /**
- * main - entry point of the simple shell 0.1
+ * main - entry point of the simple shell
  * @ac: argument count
- * @av: argument vector; av[0] is used as the error prefix
+ * @av: argument vector
  *
- * Description: Displays a prompt, reads one line from standard input,
- * strips the trailing newline, and passes the command to
- * execute_command. Empty lines are ignored. The shell exits cleanly
- * when end-of-file is reached (Ctrl+D in interactive mode).
- *
- * Return: 0 on clean exit
+ * Return: 0 on success
  */
 int main(int ac, char **av)
 {
