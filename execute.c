@@ -68,7 +68,65 @@ static void child_exec_failed(char *resolved, char **argv, char *line,
 	free(resolved);
 	free(argv);
 	free(line);
-	exit(exit_code);
+	_exit(exit_code);
+}
+
+/**
+ * handle_resolve_failure - report command resolution failure
+ * @argv: tokenized argument vector to free
+ * @prog_name: shell argv[0]
+ * @count: current input line number
+ * @command: command as typed
+ * @exit_code: status code prepared by resolve_command
+ * @msg: error message from resolve_command, or NULL on internal failure
+ *
+ * Return: shell status code for the failure
+ */
+static int handle_resolve_failure(char **argv, char *prog_name, int count,
+	char *command, int exit_code, char *msg)
+{
+	if (msg != NULL)
+		print_exec_error(prog_name, count, command, msg);
+	else
+		perror(prog_name);
+	free(argv);
+	return (msg != NULL ? exit_code : 1);
+}
+
+/**
+ * handle_fork_failure - report fork failure after freeing resources
+ * @resolved: resolved executable path to free
+ * @argv: tokenized argument vector to free
+ * @prog_name: shell argv[0]
+ *
+ * Return: always 1
+ */
+static int handle_fork_failure(char *resolved, char **argv, char *prog_name)
+{
+	free(resolved);
+	free(argv);
+	perror(prog_name);
+	return (1);
+}
+
+/**
+ * wait_for_child - wait for one child and return its shell status
+ * @pid: child process id
+ *
+ * Return: child's exit status, or 1 on wait failure
+ */
+static int wait_for_child(pid_t pid)
+{
+	int status;
+
+	while (waitpid(pid, &status, 0) == -1)
+	{
+		if (errno != EINTR)
+			return (1);
+	}
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	return (1);
 }
 
 /**
@@ -83,7 +141,7 @@ static void child_exec_failed(char *resolved, char **argv, char *line,
 int execute_command(char *line, char *prog_name, int count)
 {
 	pid_t pid;
-	int status, exit_code;
+	int exit_code;
 	char **argv, *command, *msg, *resolved;
 
 	argv = split_line(line);
@@ -98,33 +156,22 @@ int execute_command(char *line, char *prog_name, int count)
 		return (0);
 	}
 	command = argv[0];
+	msg = NULL;
+	exit_code = 1;
 	resolved = resolve_command(command, &exit_code, &msg);
 	if (resolved == NULL)
-	{
-		if (msg != NULL)
-			print_exec_error(prog_name, count, command, msg);
-		else
-			perror(prog_name);
-		free(argv);
-		return (msg != NULL ? exit_code : 1);
-	}
+		return (handle_resolve_failure(argv, prog_name, count, command,
+			exit_code, msg));
 	pid = fork();
 	if (pid == -1)
-	{
-		free(resolved);
-		free(argv);
-		perror(prog_name);
-		return (1);
-	}
+		return (handle_fork_failure(resolved, argv, prog_name));
 	if (pid == 0)
 	{
 		execve(resolved, argv, environ);
 		child_exec_failed(resolved, argv, line, prog_name, count, command);
 	}
-	waitpid(pid, &status, 0);
+	exit_code = wait_for_child(pid);
 	free(resolved);
 	free(argv);
-	if (WIFEXITED(status))
-		return (WEXITSTATUS(status));
-	return (1);
+	return (exit_code);
 }

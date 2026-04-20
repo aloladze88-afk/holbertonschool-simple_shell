@@ -79,14 +79,21 @@ static char *check_direct_command(char *command, int *status, char **msg)
 static char *search_path_dirs(char *path_copy, char *command, int *status,
 	char **msg)
 {
-	char *dir, *full;
+	char *dir, *next, *full;
+	char saved;
 	int denied;
 
 	denied = 0;
-	dir = strtok(path_copy, ":");
+	dir = path_copy;
 	while (dir != NULL)
 	{
+		next = dir;
+		while (*next != ':' && *next != '\0')
+			next++;
+		saved = *next;
+		*next = '\0';
 		full = join_path(dir, command);
+		*next = saved;
 		if (full == NULL)
 			return (NULL);
 		if (access(full, F_OK) == 0 && access(full, X_OK) == 0)
@@ -94,7 +101,7 @@ static char *search_path_dirs(char *path_copy, char *command, int *status,
 		if (access(full, F_OK) == 0)
 			denied = 1;
 		free(full);
-		dir = strtok(NULL, ":");
+		dir = (saved == '\0') ? NULL : next + 1;
 	}
 	*status = denied ? 126 : 127;
 	*msg = denied ? "Permission denied" : "not found";
@@ -116,7 +123,7 @@ char *resolve_command(char *command, int *status, char **msg)
 	if (strchr(command, '/') != NULL)
 		return (check_direct_command(command, status, msg));
 	path_env = getenv("PATH");
-	if (path_env == NULL || *path_env == '\0')
+	if (path_env == NULL)
 	{
 		*status = 127;
 		*msg = "not found";
