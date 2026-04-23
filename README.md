@@ -179,5 +179,5 @@ flowchart TD
 ---
 
 ## Authors
-Aleksandre Loladze  
-Nicolas Jacquemin
+Aleksandre Loladze <aloladze88@gmail.com> 
+Nicolas <Jacquemin nicolas.jacquemin26@gmail.com>
