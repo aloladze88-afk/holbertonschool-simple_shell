@@ -254,7 +254,6 @@ The following diagram illustrates the exact flow implemented in the codebase (se
 
 ![Shell runtime flowchart](./flowchart.png)
 
-If your platform (e.g. GitHub or Markdown viewer) supports Mermaid, here is the diagram source:
 
 ```mermaid
 flowchart TD
